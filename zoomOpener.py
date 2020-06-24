@@ -89,6 +89,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    initDriver()
-    openZoom("https://umjicanvas.com/courses/1604/external_tools/78")
+    main()
