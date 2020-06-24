@@ -29,7 +29,20 @@ def getZoomJoinUrl(index):
             return url
 
 
+def initDriver():
+    global driver
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_experimental_option("excludeSwitches",
+                                           ["enable-logging"])
+    driver = webdriver.Chrome(options=chrome_options)
+    driver.get("https://umjicanvas.com")
+    for key, value in COOKIE.items():
+        driver.add_cookie({'name': key, 'value': value})
+
+
 def openZoom(url, sleepTime=2):
+    initDriver()
     driver.get(url)
     time.sleep(sleepTime)
     driver.get("https://applications.zoom.us/lti/rich")
@@ -46,6 +59,7 @@ def openZoom(url, sleepTime=2):
         subprocess.call(["xdg-open", launchLink])
     else:
         os.startfile(launchLink)
+    driver.quit()
 
 
 def cronJob(index):
@@ -58,19 +72,6 @@ def cronJobGenerator(index):
         return cronJob(index)
 
     return wrapper
-
-
-def initDriver():
-    global driver
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_experimental_option("excludeSwitches",
-                                           ["enable-logging"])
-    driver = webdriver.Chrome(options=chrome_options)
-    driver.get("https://umjicanvas.com")
-    for key, value in COOKIE.items():
-        driver.add_cookie({'name': key, 'value': value})
-    driver.get("https://umjicanvas.com")
 
 
 def main():
