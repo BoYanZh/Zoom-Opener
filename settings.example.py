@@ -1,8 +1,6 @@
 # the cookie used to access canvas
 COOKIE = {
-    "log_session_id": "xxx",
-    "_normandy_session": "yyy",
-    "_csrf_token": "zzz"
+    "_normandy_session": "xxx"
 }
 
 # the meaning of CLASS_INFO["VE203"]:
