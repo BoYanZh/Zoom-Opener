@@ -12,21 +12,20 @@ def isOddWeek(d):
     return ((d - d2).days // 7 + 1) % 2 == 1
 
 
-def getZoomJoinUrl(index):
+def getCourseName(index):
     d = datetime.datetime.now()
     timeStr = d.strftime('%m-%d %H:%M:%S')
     print(f"\r{timeStr}", end="", flush=True)
     weekDayNow, isOdd = d.weekday() + 1, isOddWeek(d)
-    for className, info in CLASS_INFO.items():
+    for courseName, info in CLASS_INFO.items():
         url = URL_TEMPLATE.format(id=info['id'])
         for weekDay, classTime, onlyOdd in info["time"]:
             if weekDay != weekDayNow or \
                classTime != index or \
                (not isOdd and onlyOdd):
                 continue
-            print(f"{timeStr} {className} will start soon!", flush=True)
-            print(f"Url: {url}", flush=True)
-            return url
+            print(f"{timeStr} {courseName} will start soon!", flush=True)
+            return courseName
 
 
 def initDriver():
@@ -41,8 +40,10 @@ def initDriver():
         driver.add_cookie({'name': key, 'value': value})
 
 
-def openZoom(url, sleepTime=2):
+def openZoom(courseName, sleepTime=2):
     initDriver()
+    url = URL_TEMPLATE.format(id=CLASS_INFO[courseName]['id'])
+    print(f"Url: {url}", flush=True)
     driver.get(url)
     time.sleep(sleepTime)
     driver.get("https://applications.zoom.us/lti/rich")
@@ -63,8 +64,8 @@ def openZoom(url, sleepTime=2):
 
 
 def cronJob(index):
-    url = getZoomJoinUrl(index)
-    openZoom(url)
+    courseName = getCourseName(index)
+    openZoom(courseName)
 
 
 def cronJobGenerator(index):
@@ -75,7 +76,6 @@ def cronJobGenerator(index):
 
 
 def main():
-    initDriver()
     scheduler = BackgroundScheduler(timezone='Asia/Shanghai')
     startTimes = ['0755', '0955', '1205', '1355', '1555', '1825']
     for i, t in enumerate(startTimes):
