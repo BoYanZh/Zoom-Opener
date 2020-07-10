@@ -15,3 +15,5 @@ __pycache__/
 settings.py
 .vscode
 __pycache__
+
+debug.log

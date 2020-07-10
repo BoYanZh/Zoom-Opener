@@ -1,6 +1,9 @@
 import time, json, datetime, subprocess, sys, os
 from apscheduler.schedulers.background import BackgroundScheduler
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from settings import COOKIE, CLASS_INFO
 
 driver = None
@@ -40,22 +43,26 @@ def initDriver():
         driver.add_cookie({'name': key, 'value': value})
 
 
-def openZoom(courseName, sleepTime=2):
+def openZoom(courseName, timeout=10):
     initDriver()
     url = URL_TEMPLATE.format(id=CLASS_INFO[courseName]['id'])
-    print(f"Url: {url}", flush=True)
+    print(f"Canvas Url: {url}", flush=True)
     driver.get(url)
-    time.sleep(sleepTime)
-    driver.get("https://applications.zoom.us/lti/rich")
-    time.sleep(sleepTime)
-    btns = driver.find_elements_by_css_selector(
-        "[class='ant-btn ant-table-span']")
+    seq = WebDriverWait(driver, timeout).until(
+        EC.presence_of_element_located((By.ID, "tool_content")))
+    driver.switch_to.frame(seq)
+    btns = WebDriverWait(driver, timeout).until(
+        EC.presence_of_all_elements_located(
+            (By.CSS_SELECTOR, "[class='ant-btn ant-table-span']")))
     links = [btn.get_attribute('href') for btn in btns]
+    print(f"Join Url: {url}", flush=True)
     driver.get(links[0])
-    time.sleep(sleepTime)
-    launchLink = driver.find_element_by_css_selector(
-        "#zoom-ui-frame > div > div > div > div > div:nth-child(3) > h3 > a:nth-child(1)"
-    ).get_attribute('href')
+    launchElement = WebDriverWait(driver, timeout).until(
+        EC.presence_of_element_located((
+            By.CSS_SELECTOR,
+            "#zoom-ui-frame > div > div > div > div > div:nth-child(3) > h3 > a:nth-child(1)"
+        )))
+    launchLink = launchElement.get_attribute('href')
     if sys.platform.startswith('linux'):
         subprocess.call(["xdg-open", launchLink])
     else:
@@ -65,7 +72,8 @@ def openZoom(courseName, sleepTime=2):
 
 def cronJob(index):
     courseName = getCourseName(index)
-    openZoom(courseName)
+    if courseName is not None:
+        openZoom(courseName)
 
 
 def cronJobGenerator(index):
