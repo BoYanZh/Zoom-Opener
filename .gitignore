@@ -17,3 +17,5 @@ settings.py
 __pycache__
 
 debug.log
+*.out
+*.sh
